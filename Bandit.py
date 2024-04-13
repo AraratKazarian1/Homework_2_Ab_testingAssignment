@@ -1,6 +1,3 @@
-"""
-  Run this file at first, in order to see what is it printng. Instead of the print() use the respective log level
-"""
 ############################### LOGGER
 from abc import ABC, abstractmethod
 from logs import *
@@ -53,10 +50,25 @@ class Bandit(ABC):
 #--------------------------------------#
 
 class Visualization():
+    """
+    Class for visualizing results of bandit algorithms.
+    """
+
     def __init__(self):
+        """
+        Initialize Visualization class.
+        """
         pass
 
     def plot1(self, rewards_egreedy, rewards_thompson):
+        """
+        Plot cumulative rewards and average reward comparison for both algorithms.
+
+        Parameters:
+        - rewards_egreedy (list): List of rewards obtained by Epsilon Greedy algorithm.
+        - rewards_thompson (list): List of rewards obtained by Thompson Sampling algorithm.
+        """
+        # Calculate cumulative rewards
         cumulative_rewards_egreedy = np.cumsum(rewards_egreedy)
         trials_egreedy = np.arange(1, len(rewards_egreedy) + 1)
 
@@ -89,6 +101,7 @@ class Visualization():
         plt.grid(True)
         plt.show()
 
+
     def plot2(self, cumulative_rewards_egreedy, cumulative_rewards_thompson, cumulative_regrets_egreedy, cumulative_regrets_thompson):
         """
         Compare E-greedy and Thompson sampling cumulative rewards and regrets.
@@ -114,7 +127,6 @@ class Visualization():
 class EpsilonGreedy(Bandit):
     """
     An implementation of the Epsilon Greedy algorithm for multi-armed bandit problems.
-
     Inherits from the Bandit class.
     """
     
@@ -201,7 +213,7 @@ class EpsilonGreedy(Bandit):
         all_bandits = pd.DataFrame({"Bandit" : eg_selected_bandit, "Reward" : eg_rewards, "Algorithm" : "Epsilon Greedy"})
         all_bandits.to_csv('Results.csv', mode='a', header=not os.path.exists('Results.csv'), index = False)    
         
-        return bandits, eg_rewards, num_times_explored, num_times_exploited, num_optimal
+        return eg_rewards, num_times_explored, num_times_exploited, num_optimal
     
     def plot_learning_process(self, bandit_rewards, eg_rewards, N):
         """
@@ -219,26 +231,14 @@ class EpsilonGreedy(Bandit):
         plt.ylabel("Average Reward")
         plt.show()
 
-    def report(self, bandits, eg_rewards, num_times_explored, num_times_exploited, num_optimal, N):
-        """
-        Creates a report with statistics such as mean estimates, total reward earned,
-        and the number of times a bandit was explored or exploited, and saves the output in a csv file.
-        """
-        df = pd.DataFrame()
-        for i, b in enumerate(bandits):
-            print(f"Bandit {i} Mean Estimate: {b.reward_estimate :.4f}")
-            df["Bandit"] = [b for b in bandits]
-            df["Reward"] = [b.reward_estimate for b in bandits]
-            df["Algorithm"] = "EpsilonGreedy"
-    
+    def report(self, eg_rewards, num_times_explored, num_times_exploited, num_optimal, N):
+
         print(f"\nTotal Reward Earned: {eg_rewards.sum()}")
         print(f"Average Reward: {np.mean(eg_rewards)}")
-        print(f"Overall Win Rate: {eg_rewards.sum() / N :.4f}\n")
+        print(f"Overall Win Rate: {eg_rewards.sum() / N :.4f}")
         print(f"# of explored: {num_times_explored}")
         print(f"# of exploited: {num_times_exploited}")
         print(f"# of times selected the optimal bandit: {num_optimal}")
-        
-        return df
 
 #--------------------------------------#
 
@@ -351,22 +351,12 @@ class ThompsonSampling(Bandit):
         plt.show()
         
     def report(self, bandits, t_rewards, N):
-        """
-        Creates a report with statistics such as total reward earned, average reward,
-        and the overall win rate, and saves the output in a csv file.
-        """
-        df = pd.DataFrame()
-        for _ in bandits:
-            df["Bandit"] = [b for b in bandits]
-            df["Reward"] = [b.m for b in bandits]
-            df["Algorithm"] = "ThompsonSampling"
-        
+
         print(f"Total Reward Earned: {t_rewards.sum()}")
         print(f"Average Reward: {np.mean(t_rewards)}")
         print(f"Overall Win Rate: {t_rewards.sum() / N}")
         print(f"Number of times selected each bandit: {[b.N for b in bandits]}")
-        
-        return df
+
 
 def comparison(epsilon_rewards, thompson_rewards):
     """
